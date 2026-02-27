@@ -128,7 +128,7 @@ pub fn process_command(
         }
         Command::ListBindings { mode } => match hotkey_manager.list_bindings(mode.as_deref()) {
             Ok(list) => {
-                let bindings: Vec<BindingInfo> = list
+                let mut bindings: Vec<BindingInfo> = list
                     .into_iter()
                     .map(|(m, key, cmd)| BindingInfo {
                         mode: m,
@@ -136,6 +136,10 @@ pub fn process_command(
                         action: format!("{:?}", cmd),
                     })
                     .collect();
+                bindings.sort_by(|a, b| {
+                    a.mode.cmp(&b.mode)
+                        .then_with(|| a.key.cmp(&b.key))
+                });
                 CommandResult::with_response(Response::Bindings { bindings })
             }
             Err(e) => CommandResult::error(e),
